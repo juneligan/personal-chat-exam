@@ -1,6 +1,7 @@
-import React, { createContext, useState, ReactNode } from 'react';
-// import type { ReactNode } from 'react';
+import React, { createContext, useState } from 'react';
+import type { ReactNode } from 'react';
 import * as authApi from '../api/auth';
+import { logger } from '../utils/logger';
 
 // Define a user interface instead of using 'any'
 interface User {
@@ -25,15 +26,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string) => {
     const data = await authApi.login(email, password);
     setUser(data.user);
-    console.log('Login successful:', data.user);
+    logger.info('Login successful:', data.user.email);
     localStorage.setItem('token', data.token);
     localStorage.setItem('userId', data.user.id);
+    localStorage.setItem('username', data.user.username);
   };
 
   const register = async (username: string, email: string, password: string) => {
     const data = await authApi.register(username, email, password);
     setUser(data.user);
-    console.log('Registration successful:', data.user);
+    logger.info('Registration successful:', data.user.email)
+    // console.debug('Registration successful:', data.user);
   };
 
   const logout = () => {

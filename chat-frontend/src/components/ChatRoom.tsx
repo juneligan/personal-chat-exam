@@ -21,16 +21,6 @@ export default function ChatRoom({ room, socket }: Props) {
 
     useEffect(() => {
         console.log('Setting up socket listeners for room:', room);
-        
-        // Join the room - use the simple string format as in socket-test.ts
-        // socket.emit('joinRoom', room, (err: any) => {
-        //     if (err) {
-        //         console.error('❌ Error joining room:', err);
-        //     } else {
-        //         console.log(`✅ Successfully joined room: ${room}`);
-        //     }
-        // });
-
         // Listen for message history
         socket.on('messageHistory', (msgs: Message[]) => {
             console.log('📚 Received message history:', msgs);
