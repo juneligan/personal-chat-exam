@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import io from 'socket.io-client';
 import ChatRoom from '../components/ChatRoom';
 
 export default function Chat() {
   const [rooms, setRooms] = useState<string[]>([]);
   const [activeRoom, setActiveRoom] = useState<string | null>(null);
+  const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
 
   const token = localStorage.getItem('token');
   const userId = localStorage.getItem('userId');
@@ -56,7 +57,6 @@ export default function Chat() {
     return socketInstance;
   }, [token, userId]);
 
-  const isMounted = useRef(true);
   useEffect(() => {
     // Test socket connection
     socket.emit('ping', (response: any) => {
@@ -79,23 +79,60 @@ export default function Chat() {
     };
   }, [socket]);
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`);
+        const data = await res.json();
+        setUsers(data);
+      } catch (err) {
+        console.error('Failed to load users', err);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  function getDirectMessageRoom(userA: string, userB: string): string {
+    // sort the username, to avoid creating new room for a DM type messaging
+    return ['dm', ...[userA, userB].sort()].join('_');
+  }
+
   return (
     <div style={{ display: 'flex' }}>
       <aside style={{ width: '200px', borderRight: '1px solid #ccc' }}>
         <h3>Rooms</h3>
         {rooms.map((room) => (
-          <div
-            key={room}
-            style={{
-              padding: '10px',
-              background: activeRoom === room ? '#eee' : '',
-              cursor: 'pointer',
-            }}
-            onClick={() => setActiveRoom(room)}
-          >
-            {room}
-          </div>
+            <div
+                key={room}
+                style={{
+                  padding: '10px',
+                  background: activeRoom === room ? '#eee' : '',
+                  cursor: 'pointer',
+                }}
+                onClick={() => setActiveRoom(room)}
+            >
+              {room}
+            </div>
         ))}
+
+        <h3>Direct Messages</h3>
+        {users.map((user) => {
+          if (user.id.toString() === userId) return null; // Skip self
+          const dmRoom = getDirectMessageRoom(user.username, localStorage.getItem('username')!);
+          return (
+              <div
+                  key={user.id}
+                  style={{
+                    padding: '10px',
+                    background: activeRoom === dmRoom ? '#eee' : '',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => setActiveRoom(dmRoom)}
+              >
+                {user.username}
+              </div>
+          );
+        })}
       </aside>
 
       <main style={{ flex: 1, padding: '1rem' }}>

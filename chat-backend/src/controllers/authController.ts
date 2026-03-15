@@ -35,7 +35,7 @@ export const login = async (req: Request, res: Response) => {
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) return res.status(400).json({ error: 'Invalid credentials' });
 
-        const token = generateToken(user.id);
+        const token = generateToken(user.id, user.username);
         return res.status(200).json({ user: { id: user.id, username: user.username }, token });
     } catch (err) {
         return res.status(500).json({ error: 'Server error' });
