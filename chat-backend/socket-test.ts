@@ -10,7 +10,7 @@ const token = jwt.sign({
 
 console.log('🔑 Generated token:', token);
 
-const socket = io('http://localhost:5000', {
+const socket = io('http://localhost:3001', {
     auth: {
         token: token
     }
